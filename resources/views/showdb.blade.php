@@ -8,7 +8,13 @@
 @section('content')
     <div class="container">
         <div class="row">
-            <div  style="width: 100%;">
+            @if (session('status'))
+                <div class="alert alert-success">
+                    {{ session('status') }}
+                </div>
+            @endif
+            <div id="container"></div>
+            {{--<div  style="width: 100%;">
                 <div class="panel panel-default" >
                     <div class="panel-heading">Show Data Base</div>
 
@@ -43,7 +49,7 @@
                         </table>
                     </div>
                 </div>
-            </div>
+            </div>--}}
         </div>
     </div>
 @endsection
