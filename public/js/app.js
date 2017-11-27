@@ -97937,6 +97937,8 @@ module.exports = exports['default'];
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react_router___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react_router__);
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
@@ -97958,7 +97960,8 @@ var _class = function (_Component) {
         _this.state = {
             columnDefs: _this.createColumnDefs(),
             rowData: [],
-            rowGroupPanelShow: "always"
+            rowGroupPanelShow: "always",
+            fileName: ''
         };
         return _this;
     }
@@ -97976,11 +97979,39 @@ var _class = function (_Component) {
             });
         }
     }, {
+        key: "fieldChanged",
+        value: function fieldChanged(field, event) {
+            this.setState(_defineProperty({}, field, event.target.value));
+        }
+    }, {
+        key: "saveFilterModel",
+        value: function saveFilterModel() {
+            var temp = this.gridApi.getFilterModel();
+            var tempjson = { "savedName": this.state.fileName };
+            temp.saved = tempjson;
+            fetch('/api/filterSaving', {
+                method: 'POST',
+                body: JSON.stringify(temp)
+            }).then(function (response) {
+                return response.json();
+            }).then(function (filters) {
+                console.log(filters);
+                /*var temp = this.createRowData(fakedb);
+                this.setState({rowData: temp});*/
+            });
+        }
+    }, {
+        key: "loadFilterModel",
+        value: function loadFilterModel() {
+            this.gridApi.setFilterModel({ "name": { "type": "contains", "filter": "a", "filterType": "text" }, "birthday": { "dateTo": "1999-12-14", "dateFrom": "1998-06-16", "type": "inRange", "filterType": "date" } });
+            this.gridApi.onFilterChanged();
+            //{"name":{"type":"contains","filter":"a","filterType":"text"},"sex":["female"],"birthday":{"dateTo":"1999-12-14","dateFrom":"1998-06-16","type":"inRange","filterType":"date"}}
+        }
+    }, {
         key: "onGridReady",
         value: function onGridReady(params) {
             this.gridApi = params.api;
             this.columnApi = params.columnApi;
-
             this.gridApi.sizeColumnsToFit();
         }
     }, {
@@ -98069,6 +98100,8 @@ var _class = function (_Component) {
     }, {
         key: "render",
         value: function render() {
+            var _this3 = this;
+
             var containerStyle = {
                 height: "100%",
                 width: "100%"
@@ -98080,6 +98113,25 @@ var _class = function (_Component) {
                 __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                     "div",
                     { style: containerStyle, className: "ag-fresh" },
+                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                        "label",
+                        null,
+                        "File Name:",
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "fileName", value: this.state.fileName,
+                            onChange: function onChange(event) {
+                                return _this3.fieldChanged('fileName', event);
+                            } })
+                    ),
+                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                        "button",
+                        { onClick: this.saveFilterModel.bind(this) },
+                        "Save Filter Model"
+                    ),
+                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                        "button",
+                        { onClick: this.loadFilterModel.bind(this) },
+                        "Load Filter Model"
+                    ),
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_ag_grid_react__["AgGridReact"]
                     // properties
                     , { columnDefs: this.state.columnDefs,

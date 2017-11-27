@@ -9,7 +9,8 @@ export default class extends Component {
         this.state = {
             columnDefs: this.createColumnDefs(),
             rowData: [],
-            rowGroupPanelShow: "always"
+            rowGroupPanelShow: "always",
+            fileName: ''
         }
     }
 
@@ -24,10 +25,36 @@ export default class extends Component {
             })
     }
 
+    fieldChanged(field, event) {
+        this.setState({[field]: event.target.value});
+    }
+
+    saveFilterModel() {
+        var temp = this.gridApi.getFilterModel();
+        var tempjson = {"savedName" : this.state.fileName};
+        temp.saved = tempjson;
+        fetch('/api/filterSaving', {
+            method: 'POST',
+            body: JSON.stringify(temp)
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(filters => {
+                console.log(filters);
+            /*var temp = this.createRowData(fakedb);
+            this.setState({rowData: temp});*/
+        });
+    }
+    loadFilterModel(){
+        this.gridApi.setFilterModel({"name":{"type":"contains","filter":"a","filterType":"text"},"birthday":{"dateTo":"1999-12-14","dateFrom":"1998-06-16","type":"inRange","filterType":"date"}});
+        this.gridApi.onFilterChanged();
+        //{"name":{"type":"contains","filter":"a","filterType":"text"},"sex":["female"],"birthday":{"dateTo":"1999-12-14","dateFrom":"1998-06-16","type":"inRange","filterType":"date"}}
+    }
+
     onGridReady(params) {
         this.gridApi = params.api;
         this.columnApi = params.columnApi;
-
         this.gridApi.sizeColumnsToFit();
     }
 
@@ -132,6 +159,13 @@ export default class extends Component {
         return (
             <div className="container">
                 <div style={containerStyle} className="ag-fresh">
+                    <label>
+                        File Name:
+                        <input type="text" id="fileName" value={this.state.fileName}
+                               onChange={(event) => this.fieldChanged('fileName', event)}/>
+                    </label>
+                    <button onClick={this.saveFilterModel.bind(this)}>Save Filter Model</button>
+                    <button onClick={this.loadFilterModel.bind(this)}>Load Filter Model</button>
                     <AgGridReact
                         // properties
                         columnDefs={this.state.columnDefs}
