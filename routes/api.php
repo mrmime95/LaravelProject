@@ -21,7 +21,9 @@ Route::get('/aa', function () {
     return \App\FakeDb::all();
 });
 
-Route::post('/filterSaving', function (Request $request){
+Route::post('/filterSaving', function (Request $request) {
+
+    $finalMessage = "";
 
     $jsonreq = json_decode($request->getContent(), true);
 
@@ -33,19 +35,32 @@ Route::post('/filterSaving', function (Request $request){
             ['userId', '=', Auth::user()->id]
         ])->get(), true);
 
-    $elementCount  = count($savedId);
-    if($elementCount != 0)
-        return json_encode("That name is on database right");
-
-    DB::table("saved")->insert([
-        "savedName" => $jsonreq["saved"]["savedName"],
-        "userId" => Auth::user()->id,
-        "sex" => $jsonreq["saved"]["sex"],
-        "country" => $jsonreq["saved"]["country"],
-        "proLevel" => $jsonreq["saved"]["proLevel"],
-        "profession" => $jsonreq["saved"]["profession"]
-    ]);
-
+    $elementCount = count($savedId);
+    if ($elementCount != 0){
+        DB::table("saved")->where([
+            ['savedName', '=', $jsonreq["saved"]["savedName"]],
+            ['userId', '=', Auth::user()->id]
+            ])->update([
+            "savedName" => $jsonreq["saved"]["savedName"],
+            "userId" => Auth::user()->id,
+            "sex" => $jsonreq["saved"]["sex"],
+            "country" => $jsonreq["saved"]["country"],
+            "proLevel" => $jsonreq["saved"]["proLevel"],
+            "profession" => $jsonreq["saved"]["profession"]
+        ]);
+        $finalMessage = "Filter Updated";
+    }
+    else {
+        DB::table("saved")->insert([
+            "savedName" => $jsonreq["saved"]["savedName"],
+            "userId" => Auth::user()->id,
+            "sex" => $jsonreq["saved"]["sex"],
+            "country" => $jsonreq["saved"]["country"],
+            "proLevel" => $jsonreq["saved"]["proLevel"],
+            "profession" => $jsonreq["saved"]["profession"]
+        ]);
+        $finalMessage = "Filter Saved";
+    }
     $savedId = json_decode(DB::table('saved')->select('id as savedId')
         ->where([
             ['savedName', '=', $jsonreq["saved"]["savedName"]],
@@ -64,7 +79,7 @@ Route::post('/filterSaving', function (Request $request){
         DB::table($tableName)->insert($dataSet);
     }
 
-    return json_encode("COOL");
+    return json_encode($finalMessage);
 });
 
 
