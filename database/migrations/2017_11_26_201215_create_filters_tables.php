@@ -63,7 +63,7 @@ class CreateFiltersTables extends Migration
             $table->integer("userId");
             $table->integer("savedId");
         });
-        
+
         Schema::create('sorting', function (Blueprint $table) {
             $table->increments('id');
             $table->string("colId");

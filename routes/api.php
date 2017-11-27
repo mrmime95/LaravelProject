@@ -44,7 +44,7 @@ Route::post('/filterSaving', function (Request $request){
         "country" => $jsonreq["saved"]["country"],
         "proLevel" => $jsonreq["saved"]["proLevel"],
         "profession" => $jsonreq["saved"]["profession"]
-        ]);
+    ]);
 
     $savedId = json_decode(DB::table('saved')->select('id as savedId')
         ->where([
@@ -65,4 +65,90 @@ Route::post('/filterSaving', function (Request $request){
     }
 
     return json_encode("COOL");
+});
+
+
+Route::post('/filterLoading', function (Request $request){
+
+    $savedName = json_decode($request->getContent(), true)["savedName"];
+    $savedId = json_decode(DB::table('saved')->select('id as savedId')
+        ->where([
+            ['savedName', '=', $savedName],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true)[0]["savedId"];
+
+    $arrays =  DB::table('saved')->select('proLevel', 'profession', 'sex', 'country')
+        ->where([
+            ['savedName', '=', $savedName],
+            ['userId', '=', Auth::user()->id]
+        ])->get();
+
+    $jsonArray = json_encode($arrays[0]);
+    $workingArray = json_decode($jsonArray, true);
+    $arrayKeys = array_keys(json_decode($jsonArray, true));
+    $willBeJsonInFinal = [];
+    foreach ($arrayKeys as $savedArray) {
+        if (isset($workingArray[$savedArray])) {
+            $willBeJsonInFinal[$savedArray] = explode(",", $workingArray[$savedArray]);
+        }
+    }
+
+    $arrays =  json_decode(DB::table('phoneNumber')->select('type', 'filter', 'filterType')
+        ->where([
+            ['savedId', '=', $savedId],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    if(isset($arrays[0]))
+        $willBeJsonInFinal["phoneNumber"] = $arrays[0];
+
+
+    $arrays =  json_decode(DB::table('name')->select('type', 'filter', 'filterType')
+        ->where([
+            ['savedId', '=', $savedId],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    if(isset($arrays[0]))
+        $willBeJsonInFinal["name"] = $arrays[0];
+
+    $arrays =  json_decode(DB::table('email')->select('type', 'filter', 'filterType')
+        ->where([
+            ['savedId', '=', $savedId],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    if(isset($arrays[0]))
+        $willBeJsonInFinal["email"] = $arrays[0];
+
+    $arrays =  json_decode(DB::table('adress')->select('type', 'filter', 'filterType')
+        ->where([
+            ['savedId', '=', $savedId],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    if(isset($arrays[0]))
+        $willBeJsonInFinal["adress"] = $arrays[0];
+
+    $arrays =  json_decode(DB::table('salary')->select('type', 'filter', 'filterType', 'filterTo')
+        ->where([
+            ['savedId', '=', $savedId],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    if(isset($arrays[0]))
+        $willBeJsonInFinal["salary"] = $arrays[0];
+
+    $arrays =  json_decode(DB::table('birthday')->select('type', 'dateFrom', 'filterType', 'dateTo')
+        ->where([
+            ['savedId', '=', $savedId],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    if(isset($arrays[0]))
+        $willBeJsonInFinal["birthday"] = $arrays[0];
+
+    $arrays =  json_decode(DB::table('sorting')->select('colId', 'sort')
+        ->where([
+            ['savedId', '=', $savedId],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    if(isset($arrays[0]))
+        $willBeJsonInFinal["sorting"] = $arrays[0];
+
+    return $willBeJsonInFinal;
 });

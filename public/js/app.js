@@ -98003,30 +98003,36 @@ var _class = function (_Component) {
                 return response.json();
             }).then(function (filters) {
                 console.log(filters);
-                /*var temp = this.createRowData(fakedb);
-                this.setState({rowData: temp});*/
             });
         }
     }, {
         key: "loadFilterModel",
         value: function loadFilterModel() {
-            /*fetch('/api/aa')
-                .then(response => {
-                    return response.json();
-                })
-                .then(fakedb => {
-                    var temp = this.createRowData(fakedb);
-                    this.setState({rowData: temp});
-                })*/
-            this.gridApi.setFilterModel({ "adress": { "type": "contains", "filter": "4", "filterType": "text" },
-                "birthday": { "dateTo": null, "dateFrom": "2017-11-27", "type": "lessThan", "filterType": "date" },
-                "email": { "type": "contains", "filter": ".com", "filterType": "text" },
-                "name": { "type": "contains", "filter": "a", "filterType": "text" },
-                "phoneNumber": { "type": "contains", "filter": "40", "filterType": "text" },
-                "salary": { "type": "greaterThan", "filter": 5, "filterTo": null, "filterType": "number" },
-                "sex": ["female"]
+            var _this3 = this;
+
+            var tempjson = { "savedName": this.state.fileName };
+            fetch('/api/filterLoading', {
+                method: 'POST',
+                body: JSON.stringify(tempjson)
+            }).then(function (response) {
+                return response.json();
+            }).then(function (filters) {
+                if (filters["sorting"] != undefined) {
+                    _this3.gridApi.setSortModel([filters["sorting"]]);
+                    delete filters.sorting;
+                }
+                console.log(filters);
+                _this3.gridApi.setFilterModel(filters);
             });
-            this.gridApi.onFilterChanged();
+            /*this.gridApi.setFilterModel({"adress":{"type": "contains", "filter": "4", "filterType": "text"},
+                "birthday":{"dateTo": null, "dateFrom": "2017-11-27", "type": "lessThan", "filterType": "date"},
+                "email":{"type": "contains", "filter": ".com", "filterType": "text"},
+                "name":{"type": "contains", "filter": "a", "filterType": "text"},
+                "phoneNumber":{"type": "contains", "filter": "40", "filterType": "text"},
+                "salary":{"type": "greaterThan", "filter": 5, "filterTo": null, "filterType": "number"},
+                "sex":["female"]
+            });
+            this.gridApi.onFilterChanged();*/
             //{"name":{"type":"contains","filter":"a","filterType":"text"},"sex":["female"],"birthday":{"dateTo":"1999-12-14","dateFrom":"1998-06-16","type":"inRange","filterType":"date"}}
         }
     }, {
@@ -98122,7 +98128,7 @@ var _class = function (_Component) {
     }, {
         key: "render",
         value: function render() {
-            var _this3 = this;
+            var _this4 = this;
 
             var containerStyle = {
                 height: "100%",
@@ -98141,7 +98147,7 @@ var _class = function (_Component) {
                         "File Name:",
                         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "fileName", value: this.state.fileName,
                             onChange: function onChange(event) {
-                                return _this3.fieldChanged('fileName', event);
+                                return _this4.fieldChanged('fileName', event);
                             } })
                     ),
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(

@@ -62,20 +62,24 @@ export default class extends Component {
             })
             .then(filters => {
                 console.log(filters);
-            /*var temp = this.createRowData(fakedb);
-            this.setState({rowData: temp});*/
-        });
+            });
     }
     loadFilterModel(){
-        /*fetch('/api/aa')
-            .then(response => {
-                return response.json();
-            })
-            .then(fakedb => {
-                var temp = this.createRowData(fakedb);
-                this.setState({rowData: temp});
-            })*/
-        this.gridApi.setFilterModel({"adress":{"type": "contains", "filter": "4", "filterType": "text"},
+        var tempjson = {"savedName" : this.state.fileName}
+        fetch('/api/filterLoading', {
+            method: 'POST',
+            body: JSON.stringify(tempjson)
+        }).then(response => {
+            return response.json();
+        }).then(filters => {
+            if(filters["sorting"] != undefined) {
+                this.gridApi.setSortModel([filters["sorting"]]);
+                delete filters.sorting;
+            }
+            console.log(filters);
+            this.gridApi.setFilterModel(filters);
+        });
+        /*this.gridApi.setFilterModel({"adress":{"type": "contains", "filter": "4", "filterType": "text"},
             "birthday":{"dateTo": null, "dateFrom": "2017-11-27", "type": "lessThan", "filterType": "date"},
             "email":{"type": "contains", "filter": ".com", "filterType": "text"},
             "name":{"type": "contains", "filter": "a", "filterType": "text"},
@@ -83,7 +87,7 @@ export default class extends Component {
             "salary":{"type": "greaterThan", "filter": 5, "filterTo": null, "filterType": "number"},
             "sex":["female"]
         });
-        this.gridApi.onFilterChanged();
+        this.gridApi.onFilterChanged();*/
         //{"name":{"type":"contains","filter":"a","filterType":"text"},"sex":["female"],"birthday":{"dateTo":"1999-12-14","dateFrom":"1998-06-16","type":"inRange","filterType":"date"}}
     }
 
