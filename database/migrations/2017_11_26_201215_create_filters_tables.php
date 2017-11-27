@@ -48,24 +48,37 @@ class CreateFiltersTables extends Migration
         Schema::create('salary', function (Blueprint $table) {
             $table->increments('id');
             $table->string("type");
-            $table->float("filter");
-            $table->float("filterTo");
+            $table->float("filter")->nullable();
+            $table->float("filterTo")->nullable();
             $table->string("filterType");
             $table->integer("userId");
             $table->integer("savedId");
         });
         Schema::create('birthday', function (Blueprint $table) {
             $table->increments('id');
-            $table->date("dateTo");
-            $table->date("dateFrom");
+            $table->date("dateTo")->nullable();
+            $table->date("dateFrom")->nullable();
             $table->string("type");
             $table->string("filterType");
             $table->integer("userId");
             $table->integer("savedId");
         });
+        
+        Schema::create('sorting', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string("colId");
+            $table->string("sort");
+            $table->integer("userId");
+            $table->integer("savedId");
+        });
+
         Schema::create('saved', function (Blueprint $table) {
             $table->increments('id');
             $table->string("savedName");
+            $table->string("sex")->nullable();
+            $table->string("profession", 1000)->nullable();
+            $table->string("proLevel")->nullable();
+            $table->string("country", 1500)->nullable();
             $table->integer("userId");
         });
     }

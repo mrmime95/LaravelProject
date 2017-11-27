@@ -97988,7 +97988,14 @@ var _class = function (_Component) {
         value: function saveFilterModel() {
             var temp = this.gridApi.getFilterModel();
             var tempjson = { "savedName": this.state.fileName };
+            if (temp.sex != undefined) tempjson.sex = temp.sex.toString();else tempjson.sex = null;
+            if (temp.country != undefined) tempjson.country = temp.country.toString();else tempjson.country = null;
+            if (temp.profession != undefined) tempjson.profession = temp.profession.toString();else tempjson.profession = null;
+            if (temp.proLevel != undefined) tempjson.proLevel = temp.proLevel.toString();else tempjson.proLevel = null;
+
             temp.saved = tempjson;
+            if (this.gridApi.getSortModel()[0] != undefined) temp.sorting = this.gridApi.getSortModel()[0];
+            console.log(temp);
             fetch('/api/filterSaving', {
                 method: 'POST',
                 body: JSON.stringify(temp)
@@ -98003,7 +98010,22 @@ var _class = function (_Component) {
     }, {
         key: "loadFilterModel",
         value: function loadFilterModel() {
-            this.gridApi.setFilterModel({ "name": { "type": "contains", "filter": "a", "filterType": "text" }, "birthday": { "dateTo": "1999-12-14", "dateFrom": "1998-06-16", "type": "inRange", "filterType": "date" } });
+            /*fetch('/api/aa')
+                .then(response => {
+                    return response.json();
+                })
+                .then(fakedb => {
+                    var temp = this.createRowData(fakedb);
+                    this.setState({rowData: temp});
+                })*/
+            this.gridApi.setFilterModel({ "adress": { "type": "contains", "filter": "4", "filterType": "text" },
+                "birthday": { "dateTo": null, "dateFrom": "2017-11-27", "type": "lessThan", "filterType": "date" },
+                "email": { "type": "contains", "filter": ".com", "filterType": "text" },
+                "name": { "type": "contains", "filter": "a", "filterType": "text" },
+                "phoneNumber": { "type": "contains", "filter": "40", "filterType": "text" },
+                "salary": { "type": "greaterThan", "filter": 5, "filterTo": null, "filterType": "number" },
+                "sex": ["female"]
+            });
             this.gridApi.onFilterChanged();
             //{"name":{"type":"contains","filter":"a","filterType":"text"},"sex":["female"],"birthday":{"dateTo":"1999-12-14","dateFrom":"1998-06-16","type":"inRange","filterType":"date"}}
         }
