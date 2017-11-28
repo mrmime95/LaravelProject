@@ -81,7 +81,41 @@ Route::post('/filterSaving', function (Request $request) {
 
     return json_encode($finalMessage);
 });
+Route::post('/columnModelSaving', function (Request $request) {
 
+    $finalMessage = "";
+
+    $jsonreq = json_decode($request->getContent(), true);
+
+    $savedId = json_decode(DB::table('savedcolumn')->select('id as savedId')
+        ->where([
+            ['savedName', '=', $jsonreq["savedName"]],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+
+
+    $elementCount = count($savedId);
+    if ($elementCount != 0){
+        DB::table("savedColumn")->where([
+            ['savedName', '=', $jsonreq["savedName"]],
+            ['userId', '=', Auth::user()->id]
+        ])->update([
+            "savedName" => $jsonreq["savedName"],
+            "userId" => Auth::user()->id,
+            "isVisible" => $jsonreq["isVisible"],
+        ]);
+        $finalMessage = "Filter Updated";
+    }
+    else {
+        DB::table("savedColumn")->insert([
+            "savedName" => $jsonreq["savedName"],
+            "userId" => Auth::user()->id,
+            "isVisible" => $jsonreq["isVisible"],
+        ]);
+        $finalMessage = "Filter Saved";
+    }
+    return json_encode($finalMessage);
+});
 
 Route::post('/filterLoading', function (Request $request){
 
@@ -167,3 +201,13 @@ Route::post('/filterLoading', function (Request $request){
 
     return $willBeJsonInFinal;
 });
+Route::post('/columnModelLoading', function (Request $request){
+    $savedName = json_decode($request->getContent(), true)["savedName"];
+    $arrayy =  json_decode(DB::table('savedcolumn')->select('isVisible')
+        ->where([
+            ['savedName', '=', $savedName],
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true)[0]['isVisible'];
+    return explode(",", $arrayy);
+});
+

@@ -67,7 +67,7 @@ class CreateFiltersTables extends Migration
         Schema::create('sorting', function (Blueprint $table) {
             $table->increments('id');
             $table->string("colId");
-            $table->string("sort");
+            $table->string("sort", 250);
             $table->integer("userId");
             $table->integer("savedId");
         });
@@ -79,6 +79,12 @@ class CreateFiltersTables extends Migration
             $table->string("profession", 1000)->nullable();
             $table->string("proLevel")->nullable();
             $table->string("country", 1500)->nullable();
+            $table->integer("userId");
+        });
+        Schema::create('savedColumn', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string("savedName");
+            $table->string("isVisible")->nullable();
             $table->integer("userId");
         });
     }
@@ -97,5 +103,7 @@ class CreateFiltersTables extends Migration
         Schema::dropIfExists('email');
         Schema::dropIfExists('name');
         Schema::dropIfExists('saved');
+        Schema::dropIfExists('sorting');
+        Schema::dropIfExists('savedColumn');
     }
 }

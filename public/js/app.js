@@ -97961,7 +97961,8 @@ var _class = function (_Component) {
             columnDefs: _this.createColumnDefs(),
             rowData: [],
             rowGroupPanelShow: "always",
-            fileName: ''
+            filterFileName: '',
+            columnModelFileName: ''
         };
         return _this;
     }
@@ -97986,8 +97987,10 @@ var _class = function (_Component) {
     }, {
         key: "saveFilterModel",
         value: function saveFilterModel() {
+            var _this3 = this;
+
             var temp = this.gridApi.getFilterModel();
-            var tempjson = { "savedName": this.state.fileName };
+            var tempjson = { "savedName": this.state.filterFileName };
             if (temp.sex != undefined) tempjson.sex = temp.sex.toString();else tempjson.sex = null;
             if (temp.country != undefined) tempjson.country = temp.country.toString();else tempjson.country = null;
             if (temp.profession != undefined) tempjson.profession = temp.profession.toString();else tempjson.profession = null;
@@ -98003,14 +98006,15 @@ var _class = function (_Component) {
                 return response.json();
             }).then(function (filters) {
                 console.log(filters);
+                _this3.setState({ filterFileName: '' });
             });
         }
     }, {
         key: "loadFilterModel",
         value: function loadFilterModel() {
-            var _this3 = this;
+            var _this4 = this;
 
-            var tempjson = { "savedName": this.state.fileName };
+            var tempjson = { "savedName": this.state.filterFileName };
             fetch('/api/filterLoading', {
                 method: 'POST',
                 body: JSON.stringify(tempjson)
@@ -98018,13 +98022,53 @@ var _class = function (_Component) {
                 return response.json();
             }).then(function (filters) {
                 if (filters["sorting"] != undefined) {
-                    _this3.gridApi.setSortModel([filters["sorting"]]);
+                    _this4.gridApi.setSortModel([filters["sorting"]]);
                     delete filters.sorting;
                 }
                 console.log(filters);
-                _this3.gridApi.setFilterModel(filters);
+                _this4.gridApi.setFilterModel(filters);
             });
-            console.log(this.gridApi.getToolPanelModel());
+        }
+    }, {
+        key: "saveColumnModel",
+        value: function saveColumnModel() {
+            var _this5 = this;
+
+            var isVisible = [];
+            this.columnApi.getAllColumns().forEach(function (column) {
+                isVisible.push(column.isVisible());
+            });
+            var tempjson = { "savedName": this.state.columnModelFileName, "isVisible": isVisible.toString() };
+            fetch('/api/columnModelSaving', {
+                method: 'POST',
+                body: JSON.stringify(tempjson)
+            }).then(function (response) {
+                return response.json();
+            }).then(function (columnModel) {
+                console.log(columnModel);
+                _this5.setState({ columnModelFileName: '' });
+            });
+        }
+    }, {
+        key: "loadColumnModel",
+        value: function loadColumnModel() {
+            var _this6 = this;
+
+            var tempjson = { "savedName": this.state.columnModelFileName };
+            fetch('/api/columnModelLoading', {
+                method: 'POST',
+                body: JSON.stringify(tempjson)
+            }).then(function (response) {
+                return response.json();
+            }).then(function (columnShoving) {
+                var allColumnNames = [];
+                _this6.columnApi.getAllColumns().forEach(function (column) {
+                    allColumnNames.push(column.colDef["field"]);
+                });
+                for (var i = 0; i < allColumnNames.length; ++i) {
+                    columnShoving[i] == "true" ? _this6.columnApi.setColumnVisible(allColumnNames[i], true) : _this6.columnApi.setColumnVisible(allColumnNames[i], false);
+                }
+            });
         }
     }, {
         key: "onGridReady",
@@ -98119,7 +98163,7 @@ var _class = function (_Component) {
     }, {
         key: "render",
         value: function render() {
-            var _this4 = this;
+            var _this7 = this;
 
             var containerStyle = {
                 height: "100%",
@@ -98133,23 +98177,50 @@ var _class = function (_Component) {
                     "div",
                     { style: containerStyle, className: "ag-fresh" },
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                        "label",
+                        "div",
                         null,
-                        "File Name:",
-                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "fileName", value: this.state.fileName,
-                            onChange: function onChange(event) {
-                                return _this4.fieldChanged('fileName', event);
-                            } })
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                            "label",
+                            null,
+                            "Filter File Name:",
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "filterfilterFileName", value: this.state.filterFileName,
+                                onChange: function onChange(event) {
+                                    return _this7.fieldChanged('filterFileName', event);
+                                } })
+                        ),
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                            "button",
+                            { onClick: this.saveFilterModel.bind(this) },
+                            "Save Filter Model"
+                        ),
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                            "button",
+                            { onClick: this.loadFilterModel.bind(this) },
+                            "Load Filter Model"
+                        )
                     ),
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                        "button",
-                        { onClick: this.saveFilterModel.bind(this) },
-                        "Save Filter Model"
-                    ),
-                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                        "button",
-                        { onClick: this.loadFilterModel.bind(this) },
-                        "Load Filter Model"
+                        "div",
+                        null,
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                            "label",
+                            null,
+                            "Column Model File Name:",
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "columnModelFileName", value: this.state.columnModelFileName,
+                                onChange: function onChange(event) {
+                                    return _this7.fieldChanged('columnModelFileName', event);
+                                } })
+                        ),
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                            "button",
+                            { onClick: this.saveColumnModel.bind(this) },
+                            "Save Column Model"
+                        ),
+                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                            "button",
+                            { onClick: this.loadColumnModel.bind(this) },
+                            "Load Column Model"
+                        )
                     ),
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_ag_grid_react__["AgGridReact"]
                     // properties
@@ -98160,7 +98231,6 @@ var _class = function (_Component) {
                         enableSorting: true,
                         floatingFilter: true,
                         showToolPanel: true
-
                         // events
                         , onGridReady: this.onGridReady.bind(this),
                         onFilterChanged: this.onFilterChanged.bind(this) }),

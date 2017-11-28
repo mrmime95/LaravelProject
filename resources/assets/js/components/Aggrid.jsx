@@ -10,7 +10,8 @@ export default class extends Component {
             columnDefs: this.createColumnDefs(),
             rowData: [],
             rowGroupPanelShow: "always",
-            fileName: ''
+            filterFileName: '',
+            columnModelFileName: '',
         }
     }
 
@@ -31,7 +32,7 @@ export default class extends Component {
 
     saveFilterModel() {
         var temp = this.gridApi.getFilterModel();
-        var tempjson = {"savedName" : this.state.fileName};
+        var tempjson = {"savedName" : this.state.filterFileName};
         if(temp.sex != undefined)
             tempjson.sex = temp.sex.toString();
         else
@@ -62,10 +63,11 @@ export default class extends Component {
             })
             .then(filters => {
                 console.log(filters);
+                this.setState({filterFileName: ''});
             });
     }
     loadFilterModel(){
-        var tempjson = {"savedName" : this.state.fileName}
+        var tempjson = {"savedName" : this.state.filterFileName}
         fetch('/api/filterLoading', {
             method: 'POST',
             body: JSON.stringify(tempjson)
@@ -79,7 +81,43 @@ export default class extends Component {
             console.log(filters);
             this.gridApi.setFilterModel(filters);
         });
-        console.log(this.gridApi.getToolPanelModel());
+    }
+
+    saveColumnModel() {
+        var isVisible = [];
+        this.columnApi.getAllColumns().forEach(function (column) {
+            isVisible.push(column.isVisible());
+        })
+        var tempjson = {"savedName" : this.state.columnModelFileName, "isVisible": isVisible.toString()};
+        fetch('/api/columnModelSaving', {
+            method: 'POST',
+            body: JSON.stringify(tempjson)
+        })
+            .then(response => {
+                return response.json();
+            })
+            .then(columnModel => {
+                console.log(columnModel);
+                this.setState({columnModelFileName: ''});
+            });
+    }
+    loadColumnModel(){
+        var tempjson = {"savedName" : this.state.columnModelFileName}
+        fetch('/api/columnModelLoading', {
+            method: 'POST',
+            body: JSON.stringify(tempjson)
+        }).then(response => {
+            return response.json();
+        }).then(columnShoving => {
+            var allColumnNames = [];
+            this.columnApi.getAllColumns().forEach(function (column) {
+                allColumnNames.push(column.colDef["field"]);
+            })
+            for(var i = 0; i < allColumnNames.length; ++i){
+                columnShoving[i] == "true" ? this.columnApi.setColumnVisible(allColumnNames[i], true) :
+                    this.columnApi.setColumnVisible(allColumnNames[i], false);
+            }
+        });
     }
 
     onGridReady(params) {
@@ -161,7 +199,8 @@ export default class extends Component {
                 headerName: "Pro Level", field: "proLevel", filter: "set",
                 filterParams: { selectAllOnMiniFilter: true }
             },
-        ];
+
+        ]
     }
 
     createRowData(fakedb) {
@@ -189,13 +228,24 @@ export default class extends Component {
         return (
             <div className="container">
                 <div style={containerStyle} className="ag-fresh">
-                    <label>
-                        File Name:
-                        <input type="text" id="fileName" value={this.state.fileName}
-                               onChange={(event) => this.fieldChanged('fileName', event)}/>
-                    </label>
-                    <button onClick={this.saveFilterModel.bind(this)}>Save Filter Model</button>
-                    <button onClick={this.loadFilterModel.bind(this)}>Load Filter Model</button>
+                    <div>
+                        <label>
+                            Filter File Name:
+                            <input type="text" id="filterfilterFileName" value={this.state.filterFileName}
+                                   onChange={(event) => this.fieldChanged('filterFileName', event)}/>
+                        </label>
+                        <button onClick={this.saveFilterModel.bind(this)}>Save Filter Model</button>
+                        <button onClick={this.loadFilterModel.bind(this)}>Load Filter Model</button>
+                    </div>
+                    <div>
+                        <label>
+                            Column Model File Name:
+                            <input type="text" id="columnModelFileName" value={this.state.columnModelFileName}
+                                   onChange={(event) => this.fieldChanged('columnModelFileName', event)}/>
+                        </label>
+                        <button onClick={this.saveColumnModel.bind(this)}>Save Column Model</button>
+                        <button onClick={this.loadColumnModel.bind(this)}>Load Column Model</button>
+                    </div>
                     <AgGridReact
                         // properties
                         columnDefs={this.state.columnDefs}
@@ -205,7 +255,6 @@ export default class extends Component {
                         enableSorting={true}
                         floatingFilter={true}
                         showToolPanel={true}
-
                         // events
                         onGridReady={this.onGridReady.bind(this)}
                         onFilterChanged={this.onFilterChanged.bind(this)}>
