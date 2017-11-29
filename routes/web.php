@@ -23,9 +23,7 @@ Route::get('users/create',[
     'uses' => 'UsersController@create'
 ]);
 
-Route::post('users',[
-    'uses' => 'UsersController@store'
-]);
+Route::post('users',['uses' => 'UsersController@store']);
 
 Route::get('showdatabase', 'FakeDbController@show')->name('show');
 

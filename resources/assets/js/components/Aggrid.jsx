@@ -51,48 +51,52 @@ export default class extends Component {
     }
 
     saveFilterModel() {
-        var temp = this.gridApi.getFilterModel();
-        var tempjson = {"savedName" : this.state.filterFileName};
-        if(temp.sex != undefined)
-            tempjson.sex = temp.sex.toString();
-        else
-            tempjson.sex = null;
-        if(temp.country != undefined)
-            tempjson.country = temp.country.toString();
-        else
-            tempjson.country = null;
-        if(temp.profession != undefined)
-            tempjson.profession = temp.profession.toString();
-        else
-            tempjson.profession = null;
-        if(temp.proLevel != undefined)
-            tempjson.proLevel = temp.proLevel.toString();
-        else
-            tempjson.proLevel = null;
+        if(this.state.filterFileName == "")
+            alert("Please add a filename");
+        else {
+            var temp = this.gridApi.getFilterModel();
+            var tempjson = {"savedName": this.state.filterFileName};
+            if (temp.sex != undefined)
+                tempjson.sex = temp.sex.toString();
+            else
+                tempjson.sex = null;
+            if (temp.country != undefined)
+                tempjson.country = temp.country.toString();
+            else
+                tempjson.country = null;
+            if (temp.profession != undefined)
+                tempjson.profession = temp.profession.toString();
+            else
+                tempjson.profession = null;
+            if (temp.proLevel != undefined)
+                tempjson.proLevel = temp.proLevel.toString();
+            else
+                tempjson.proLevel = null;
 
-        temp.saved = tempjson;
-        if(this.gridApi.getSortModel()[0] != undefined)
-            temp.sorting = this.gridApi.getSortModel()[0];
-        console.log(temp);
-        fetch('/api/filterSaving', {
-            method: 'POST',
-            body: JSON.stringify(temp)
-        })
-            .then(response => {
-                return response.json();
+            temp.saved = tempjson;
+            if (this.gridApi.getSortModel()[0] != undefined)
+                temp.sorting = this.gridApi.getSortModel()[0];
+            console.log(temp);
+            fetch('/api/filterSaving', {
+                method: 'POST',
+                body: JSON.stringify(temp)
             })
-            .then(filters => {
-                console.log(filters);
-                alert(filters);
-                this.setState({filterFileName: ''});
-            });
-        fetch('/api/loadSavedFiltersName')
-            .then(response => {
-                return response.json();
-            })
-            .then(savedName => {
-                this.setState({savedFiles: savedName});
-            })
+                .then(response => {
+                    return response.json();
+                })
+                .then(filters => {
+                    console.log(filters);
+                    alert(filters);
+                    this.setState({filterFileName: ''});
+                });
+            fetch('/api/loadSavedFiltersName')
+                .then(response => {
+                    return response.json();
+                })
+                .then(savedName => {
+                    this.setState({savedFiles: savedName});
+                })
+        }
     }
     loadFilterModel(){
         if(this.state.loadFilterFileName == ""){
@@ -116,30 +120,34 @@ export default class extends Component {
     }
 
     saveColumnModel() {
-        var isVisible = [];
-        this.columnApi.getAllColumns().forEach(function (column) {
-            isVisible.push(column.isVisible());
-        })
-        var tempjson = {"savedName" : this.state.columnModelFileName, "isVisible": isVisible.toString()};
-        fetch('/api/columnModelSaving', {
-            method: 'POST',
-            body: JSON.stringify(tempjson)
-        })
-            .then(response => {
-                return response.json();
+        if(this.state.columnModelFileName == "")
+            alert("Please add a filename");
+        else {
+            var isVisible = [];
+            this.columnApi.getAllColumns().forEach(function (column) {
+                isVisible.push(column.isVisible());
             })
-            .then(columnModel => {
-                console.log(columnModel);
-                alert(columnModel);
-                this.setState({columnModelFileName: ''});
-            });
-        fetch('/api/loadSavedColumnModelsName')
-            .then(response => {
-                return response.json();
+            var tempjson = {"savedName": this.state.columnModelFileName, "isVisible": isVisible.toString()};
+            fetch('/api/columnModelSaving', {
+                method: 'POST',
+                body: JSON.stringify(tempjson)
             })
-            .then(savedColumnModelName => {
-                this.setState({savedColumnModels: savedColumnModelName});
-            })
+                .then(response => {
+                    return response.json();
+                })
+                .then(columnModel => {
+                    console.log(columnModel);
+                    alert(columnModel);
+                    this.setState({columnModelFileName: ''});
+                });
+            fetch('/api/loadSavedColumnModelsName')
+                .then(response => {
+                    return response.json();
+                })
+                .then(savedColumnModelName => {
+                    this.setState({savedColumnModels: savedColumnModelName});
+                })
+        }
     }
     loadColumnModel(){
         if(this.state.loadColumnModelFileName == ""){

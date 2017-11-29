@@ -81,6 +81,7 @@ class CreateFiltersTables extends Migration
             $table->string("country", 1500)->nullable();
             $table->integer("userId");
         });
+
         Schema::create('savedColumn', function (Blueprint $table) {
             $table->increments('id');
             $table->string("savedName");
