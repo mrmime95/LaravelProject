@@ -11,7 +11,11 @@ export default class extends Component {
             rowData: [],
             rowGroupPanelShow: "always",
             filterFileName: '',
+            loadFilterFileName: '',
             columnModelFileName: '',
+            loadColumnModelFileName: '',
+            savedFiles: [],
+            savedColumnModels: [],
         }
     }
 
@@ -24,10 +28,26 @@ export default class extends Component {
                 var temp = this.createRowData(fakedb);
                 this.setState({rowData: temp});
             })
+        fetch('/api/loadSavedFiltersName')
+            .then(response => {
+                return response.json();
+            })
+            .then(savedName => {
+                this.setState({savedFiles: savedName});
+            })
+        fetch('/api/loadSavedColumnModelsName')
+            .then(response => {
+                return response.json();
+            })
+            .then(savedColumnModelName => {
+                this.setState({savedColumnModels: savedColumnModelName});
+            })
+
     }
 
     fieldChanged(field, event) {
         this.setState({[field]: event.target.value});
+        console.log(event.target.value);
     }
 
     saveFilterModel() {
@@ -63,24 +83,36 @@ export default class extends Component {
             })
             .then(filters => {
                 console.log(filters);
+                alert(filters);
                 this.setState({filterFileName: ''});
             });
+        fetch('/api/loadSavedFiltersName')
+            .then(response => {
+                return response.json();
+            })
+            .then(savedName => {
+                this.setState({savedFiles: savedName});
+            })
     }
     loadFilterModel(){
-        var tempjson = {"savedName" : this.state.filterFileName}
-        fetch('/api/filterLoading', {
-            method: 'POST',
-            body: JSON.stringify(tempjson)
-        }).then(response => {
-            return response.json();
-        }).then(filters => {
-            if(filters["sorting"] != undefined) {
-                this.gridApi.setSortModel([filters["sorting"]]);
-                delete filters.sorting;
-            }
-            console.log(filters);
-            this.gridApi.setFilterModel(filters);
-        });
+        if(this.state.loadFilterFileName == ""){
+            alert("Please select a loadable file name");
+        }else {
+            var tempjson = {"savedName": this.state.loadFilterFileName}
+            fetch('/api/filterLoading', {
+                method: 'POST',
+                body: JSON.stringify(tempjson)
+            }).then(response => {
+                return response.json();
+            }).then(filters => {
+                if (filters["sorting"] != undefined) {
+                    this.gridApi.setSortModel([filters["sorting"]]);
+                    delete filters.sorting;
+                }
+                console.log(filters);
+                this.gridApi.setFilterModel(filters);
+            });
+        }
     }
 
     saveColumnModel() {
@@ -98,26 +130,38 @@ export default class extends Component {
             })
             .then(columnModel => {
                 console.log(columnModel);
+                alert(columnModel);
                 this.setState({columnModelFileName: ''});
             });
+        fetch('/api/loadSavedColumnModelsName')
+            .then(response => {
+                return response.json();
+            })
+            .then(savedColumnModelName => {
+                this.setState({savedColumnModels: savedColumnModelName});
+            })
     }
     loadColumnModel(){
-        var tempjson = {"savedName" : this.state.columnModelFileName}
-        fetch('/api/columnModelLoading', {
-            method: 'POST',
-            body: JSON.stringify(tempjson)
-        }).then(response => {
-            return response.json();
-        }).then(columnShoving => {
-            var allColumnNames = [];
-            this.columnApi.getAllColumns().forEach(function (column) {
-                allColumnNames.push(column.colDef["field"]);
-            })
-            for(var i = 0; i < allColumnNames.length; ++i){
-                columnShoving[i] == "true" ? this.columnApi.setColumnVisible(allColumnNames[i], true) :
-                    this.columnApi.setColumnVisible(allColumnNames[i], false);
-            }
-        });
+        if(this.state.loadColumnModelFileName == ""){
+            alert("Please select a loadable file name");
+        }else {
+            var tempjson = {"savedName": this.state.loadColumnModelFileName}
+            fetch('/api/columnModelLoading', {
+                method: 'POST',
+                body: JSON.stringify(tempjson)
+            }).then(response => {
+                return response.json();
+            }).then(columnShoving => {
+                var allColumnNames = [];
+                this.columnApi.getAllColumns().forEach(function (column) {
+                    allColumnNames.push(column.colDef["field"]);
+                })
+                for (var i = 0; i < allColumnNames.length; ++i) {
+                    columnShoving[i] == "true" ? this.columnApi.setColumnVisible(allColumnNames[i], true) :
+                        this.columnApi.setColumnVisible(allColumnNames[i], false);
+                }
+            });
+        }
     }
 
     onGridReady(params) {
@@ -219,9 +263,15 @@ export default class extends Component {
         this.gridApi.setQuickFilter(value);
     }
 
+    renderSavedNames(savedFile){
+        return (
+            <option key = {savedFile} value = {savedFile}>  {savedFile} </option>
+        );
+    }
+
     render() {
         let containerStyle = {
-            height: "100%",
+            height: "60%",
             width: "100%",
         };
 
@@ -229,23 +279,48 @@ export default class extends Component {
             <div className="container">
                 <div style={containerStyle} className="ag-fresh">
                     <div>
-                        <label>
-                            Filter File Name:
-                            <input type="text" id="filterfilterFileName" value={this.state.filterFileName}
-                                   onChange={(event) => this.fieldChanged('filterFileName', event)}/>
-                        </label>
-                        <button onClick={this.saveFilterModel.bind(this)}>Save Filter Model</button>
-                        <button onClick={this.loadFilterModel.bind(this)}>Load Filter Model</button>
+                        <div>
+                            <label>
+                                Filter File Name:
+                                <input type="text" id="filterfilterFileName" value={this.state.filterFileName}
+                                       onChange={(event) => this.fieldChanged('filterFileName', event)}/>
+                            </label>
+                            <button onClick={this.saveFilterModel.bind(this)}>Save Filter Model</button>
+                        </div>
+                        <div>
+                            <label>
+                                Load Filter File from:
+                                <select id="savedFiles" name="savedFiles"  required
+                                        onChange={(event) => this.fieldChanged('loadFilterFileName', event)}>
+                                    <option key="empty1"> </option>
+                                    {this.state.savedFiles.map((savedFile) => this.renderSavedNames(savedFile))}
+                                </select>
+                            </label>
+                            <button onClick={this.loadFilterModel.bind(this)}>Load Filter Model</button>
+                        </div>
                     </div>
                     <div>
-                        <label>
-                            Column Model File Name:
-                            <input type="text" id="columnModelFileName" value={this.state.columnModelFileName}
-                                   onChange={(event) => this.fieldChanged('columnModelFileName', event)}/>
-                        </label>
-                        <button onClick={this.saveColumnModel.bind(this)}>Save Column Model</button>
-                        <button onClick={this.loadColumnModel.bind(this)}>Load Column Model</button>
+                        <div>
+                            <label>
+                                Column Model File Name:
+                                <input type="text" id="columnModelFileName" value={this.state.columnModelFileName}
+                                       onChange={(event) => this.fieldChanged('columnModelFileName', event)}/>
+                            </label>
+                            <button onClick={this.saveColumnModel.bind(this)}>Save Column Model</button>
+                        </div>
+                        <div>
+                            <label>
+                                Load Column Model File From:
+                                <select id="savedColumnModelFiles" name="savedColumnModelFiles"  required
+                                        onChange={(event) => this.fieldChanged('loadColumnModelFileName', event)}>
+                                    <option key="empty1"> </option>
+                                    {this.state.savedColumnModels.map((savedColumnModelFile) => this.renderSavedNames(savedColumnModelFile))}
+                                </select>
+                            </label>
+                            <button onClick={this.loadColumnModel.bind(this)}>Load Column Model</button>
+                        </div>
                     </div>
+                    <button onClick={this.autoSizeAll.bind(this)}>Auto-Size All</button>
                     <AgGridReact
                         // properties
                         columnDefs={this.state.columnDefs}
@@ -260,7 +335,6 @@ export default class extends Component {
                         onFilterChanged={this.onFilterChanged.bind(this)}>
 
                     </AgGridReact>
-                    <button onClick={this.autoSizeAll.bind(this)}>Auto-Size All</button>
                 </div>
             </div>
         )

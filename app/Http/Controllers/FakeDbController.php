@@ -14,8 +14,6 @@ class FakeDbController extends Controller
 
     public function show()
     {
-        //$fakeusers = FakeDb::all();
-
-        return view('showdb'/*, ['users' => $fakeusers]*/);
+        return view('showdb');
     }
 }

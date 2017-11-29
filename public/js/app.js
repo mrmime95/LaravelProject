@@ -97962,7 +97962,11 @@ var _class = function (_Component) {
             rowData: [],
             rowGroupPanelShow: "always",
             filterFileName: '',
-            columnModelFileName: ''
+            loadFilterFileName: '',
+            columnModelFileName: '',
+            loadColumnModelFileName: '',
+            savedFiles: [],
+            savedColumnModels: []
         };
         return _this;
     }
@@ -97978,11 +97982,22 @@ var _class = function (_Component) {
                 var temp = _this2.createRowData(fakedb);
                 _this2.setState({ rowData: temp });
             });
+            fetch('/api/loadSavedFiltersName').then(function (response) {
+                return response.json();
+            }).then(function (savedName) {
+                _this2.setState({ savedFiles: savedName });
+            });
+            fetch('/api/loadSavedColumnModelsName').then(function (response) {
+                return response.json();
+            }).then(function (savedColumnModelName) {
+                _this2.setState({ savedColumnModels: savedColumnModelName });
+            });
         }
     }, {
         key: "fieldChanged",
         value: function fieldChanged(field, event) {
             this.setState(_defineProperty({}, field, event.target.value));
+            console.log(event.target.value);
         }
     }, {
         key: "saveFilterModel",
@@ -98006,7 +98021,13 @@ var _class = function (_Component) {
                 return response.json();
             }).then(function (filters) {
                 console.log(filters);
+                alert(filters);
                 _this3.setState({ filterFileName: '' });
+            });
+            fetch('/api/loadSavedFiltersName').then(function (response) {
+                return response.json();
+            }).then(function (savedName) {
+                _this3.setState({ savedFiles: savedName });
             });
         }
     }, {
@@ -98014,20 +98035,24 @@ var _class = function (_Component) {
         value: function loadFilterModel() {
             var _this4 = this;
 
-            var tempjson = { "savedName": this.state.filterFileName };
-            fetch('/api/filterLoading', {
-                method: 'POST',
-                body: JSON.stringify(tempjson)
-            }).then(function (response) {
-                return response.json();
-            }).then(function (filters) {
-                if (filters["sorting"] != undefined) {
-                    _this4.gridApi.setSortModel([filters["sorting"]]);
-                    delete filters.sorting;
-                }
-                console.log(filters);
-                _this4.gridApi.setFilterModel(filters);
-            });
+            if (this.state.loadFilterFileName == "") {
+                alert("Please select a loadable file name");
+            } else {
+                var tempjson = { "savedName": this.state.loadFilterFileName };
+                fetch('/api/filterLoading', {
+                    method: 'POST',
+                    body: JSON.stringify(tempjson)
+                }).then(function (response) {
+                    return response.json();
+                }).then(function (filters) {
+                    if (filters["sorting"] != undefined) {
+                        _this4.gridApi.setSortModel([filters["sorting"]]);
+                        delete filters.sorting;
+                    }
+                    console.log(filters);
+                    _this4.gridApi.setFilterModel(filters);
+                });
+            }
         }
     }, {
         key: "saveColumnModel",
@@ -98046,7 +98071,13 @@ var _class = function (_Component) {
                 return response.json();
             }).then(function (columnModel) {
                 console.log(columnModel);
+                alert(columnModel);
                 _this5.setState({ columnModelFileName: '' });
+            });
+            fetch('/api/loadSavedColumnModelsName').then(function (response) {
+                return response.json();
+            }).then(function (savedColumnModelName) {
+                _this5.setState({ savedColumnModels: savedColumnModelName });
             });
         }
     }, {
@@ -98054,21 +98085,25 @@ var _class = function (_Component) {
         value: function loadColumnModel() {
             var _this6 = this;
 
-            var tempjson = { "savedName": this.state.columnModelFileName };
-            fetch('/api/columnModelLoading', {
-                method: 'POST',
-                body: JSON.stringify(tempjson)
-            }).then(function (response) {
-                return response.json();
-            }).then(function (columnShoving) {
-                var allColumnNames = [];
-                _this6.columnApi.getAllColumns().forEach(function (column) {
-                    allColumnNames.push(column.colDef["field"]);
+            if (this.state.loadColumnModelFileName == "") {
+                alert("Please select a loadable file name");
+            } else {
+                var tempjson = { "savedName": this.state.loadColumnModelFileName };
+                fetch('/api/columnModelLoading', {
+                    method: 'POST',
+                    body: JSON.stringify(tempjson)
+                }).then(function (response) {
+                    return response.json();
+                }).then(function (columnShoving) {
+                    var allColumnNames = [];
+                    _this6.columnApi.getAllColumns().forEach(function (column) {
+                        allColumnNames.push(column.colDef["field"]);
+                    });
+                    for (var i = 0; i < allColumnNames.length; ++i) {
+                        columnShoving[i] == "true" ? _this6.columnApi.setColumnVisible(allColumnNames[i], true) : _this6.columnApi.setColumnVisible(allColumnNames[i], false);
+                    }
                 });
-                for (var i = 0; i < allColumnNames.length; ++i) {
-                    columnShoving[i] == "true" ? _this6.columnApi.setColumnVisible(allColumnNames[i], true) : _this6.columnApi.setColumnVisible(allColumnNames[i], false);
-                }
-            });
+            }
         }
     }, {
         key: "onGridReady",
@@ -98161,12 +98196,23 @@ var _class = function (_Component) {
             this.gridApi.setQuickFilter(value);
         }
     }, {
+        key: "renderSavedNames",
+        value: function renderSavedNames(savedFile) {
+            return __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                "option",
+                { key: savedFile, value: savedFile },
+                "  ",
+                savedFile,
+                " "
+            );
+        }
+    }, {
         key: "render",
         value: function render() {
             var _this7 = this;
 
             var containerStyle = {
-                height: "100%",
+                height: "60%",
                 width: "100%"
             };
 
@@ -98180,47 +98226,108 @@ var _class = function (_Component) {
                         "div",
                         null,
                         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                            "label",
+                            "div",
                             null,
-                            "Filter File Name:",
-                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "filterfilterFileName", value: this.state.filterFileName,
-                                onChange: function onChange(event) {
-                                    return _this7.fieldChanged('filterFileName', event);
-                                } })
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "label",
+                                null,
+                                "Filter File Name:",
+                                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "filterfilterFileName", value: this.state.filterFileName,
+                                    onChange: function onChange(event) {
+                                        return _this7.fieldChanged('filterFileName', event);
+                                    } })
+                            ),
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "button",
+                                { onClick: this.saveFilterModel.bind(this) },
+                                "Save Filter Model"
+                            )
                         ),
                         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                            "button",
-                            { onClick: this.saveFilterModel.bind(this) },
-                            "Save Filter Model"
-                        ),
-                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                            "button",
-                            { onClick: this.loadFilterModel.bind(this) },
-                            "Load Filter Model"
+                            "div",
+                            null,
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "label",
+                                null,
+                                "Load Filter File from:",
+                                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                    "select",
+                                    { id: "savedFiles", name: "savedFiles", required: true,
+                                        onChange: function onChange(event) {
+                                            return _this7.fieldChanged('loadFilterFileName', event);
+                                        } },
+                                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                        "option",
+                                        { key: "empty1" },
+                                        " "
+                                    ),
+                                    this.state.savedFiles.map(function (savedFile) {
+                                        return _this7.renderSavedNames(savedFile);
+                                    })
+                                )
+                            ),
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "button",
+                                { onClick: this.loadFilterModel.bind(this) },
+                                "Load Filter Model"
+                            )
                         )
                     ),
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
                         "div",
                         null,
                         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                            "label",
+                            "div",
                             null,
-                            "Column Model File Name:",
-                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "columnModelFileName", value: this.state.columnModelFileName,
-                                onChange: function onChange(event) {
-                                    return _this7.fieldChanged('columnModelFileName', event);
-                                } })
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "label",
+                                null,
+                                "Column Model File Name:",
+                                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement("input", { type: "text", id: "columnModelFileName", value: this.state.columnModelFileName,
+                                    onChange: function onChange(event) {
+                                        return _this7.fieldChanged('columnModelFileName', event);
+                                    } })
+                            ),
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "button",
+                                { onClick: this.saveColumnModel.bind(this) },
+                                "Save Column Model"
+                            )
                         ),
                         __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                            "button",
-                            { onClick: this.saveColumnModel.bind(this) },
-                            "Save Column Model"
-                        ),
-                        __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                            "button",
-                            { onClick: this.loadColumnModel.bind(this) },
-                            "Load Column Model"
+                            "div",
+                            null,
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "label",
+                                null,
+                                "Load Column Model File From:",
+                                __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                    "select",
+                                    { id: "savedColumnModelFiles", name: "savedColumnModelFiles", required: true,
+                                        onChange: function onChange(event) {
+                                            return _this7.fieldChanged('loadColumnModelFileName', event);
+                                        } },
+                                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                        "option",
+                                        { key: "empty1" },
+                                        " "
+                                    ),
+                                    this.state.savedColumnModels.map(function (savedColumnModelFile) {
+                                        return _this7.renderSavedNames(savedColumnModelFile);
+                                    })
+                                )
+                            ),
+                            __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                                "button",
+                                { onClick: this.loadColumnModel.bind(this) },
+                                "Load Column Model"
+                            )
                         )
+                    ),
+                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
+                        "button",
+                        { onClick: this.autoSizeAll.bind(this) },
+                        "Auto-Size All"
                     ),
                     __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(__WEBPACK_IMPORTED_MODULE_1_ag_grid_react__["AgGridReact"]
                     // properties
@@ -98233,12 +98340,7 @@ var _class = function (_Component) {
                         showToolPanel: true
                         // events
                         , onGridReady: this.onGridReady.bind(this),
-                        onFilterChanged: this.onFilterChanged.bind(this) }),
-                    __WEBPACK_IMPORTED_MODULE_0_react___default.a.createElement(
-                        "button",
-                        { onClick: this.autoSizeAll.bind(this) },
-                        "Auto-Size All"
-                    )
+                        onFilterChanged: this.onFilterChanged.bind(this) })
                 )
             );
         }

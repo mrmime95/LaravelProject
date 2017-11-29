@@ -211,3 +211,26 @@ Route::post('/columnModelLoading', function (Request $request){
     return explode(",", $arrayy);
 });
 
+Route::get('/loadSavedFiltersName', function () {
+    $savedName = json_decode(DB::table('saved')->select('savedName')
+        ->where([
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    $savedNameArray = [];
+    foreach ($savedName as $name){
+        array_push($savedNameArray, $name['savedName']);
+    }
+    return $savedNameArray;
+});
+
+Route::get('/loadSavedColumnModelsName', function () {
+    $savedName = json_decode(DB::table('savedColumn')->select('savedName')
+        ->where([
+            ['userId', '=', Auth::user()->id]
+        ])->get(), true);
+    $savedNameArray = [];
+    foreach ($savedName as $name){
+        array_push($savedNameArray, $name['savedName']);
+    }
+    return $savedNameArray;
+});

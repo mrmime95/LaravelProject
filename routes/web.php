@@ -15,20 +15,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-/*Route::get('users', function () {
-    $users = [
-        '0' => [
-            "first_name" => "Gyorgy",
-            "last_name" => "Szilard"
-        ],
-        '1' => [
-            "first_name" => "Gyorgy",
-            "last_name" => "Bence"
-        ]
-    ];
-    return "users";
-});*/
-
 Route::get('users', [
     'uses' => 'UsersController@index'
 ]);
